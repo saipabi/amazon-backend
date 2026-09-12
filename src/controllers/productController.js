@@ -1,30 +1,37 @@
 const Product = require('../models/Product');
 const sampleProducts = require('../data/sampleProducts');
 
-// @desc Get all products (with optional category, subCategory & search filter)
+// @desc Get all products (with strict category, subCategory, isDress & search filter)
 // @route GET /api/products
 const getProducts = async (req, res) => {
-  const { category, subCategory, search } = req.query;
+  const { category, subCategory, isDress, search } = req.query;
 
   try {
     let query = {};
+
     if (category && category !== 'All') {
       if (category === "Men's Wear") {
-        query.category = 'Fashion';
         query.subCategory = 'Men';
+        query.isDress = true;
       } else if (category === "Women's Wear") {
-        query.category = 'Fashion';
         query.subCategory = 'Women';
+        query.isDress = true;
       } else if (category === "Kids' Wear") {
-        query.category = 'Fashion';
         query.subCategory = 'Kids';
+        query.isDress = true;
       } else {
         query.category = category;
       }
     }
+
     if (subCategory && subCategory !== 'All') {
       query.subCategory = subCategory;
     }
+
+    if (isDress !== undefined) {
+      query.isDress = isDress === 'true';
+    }
+
     if (search) {
       query.title = { $regex: search, $options: 'i' };
     }
@@ -37,26 +44,34 @@ const getProducts = async (req, res) => {
     console.warn('Using sample product data fallback');
   }
 
-  // Fallback to sample array filtering if MongoDB query fails or is empty
+  // Fallback to sample array filtering
   let filtered = [...sampleProducts];
+
   if (category && category !== 'All') {
     if (category === "Men's Wear") {
-      filtered = filtered.filter(p => p.category === 'Fashion' && p.subCategory === 'Men');
+      filtered = filtered.filter(p => p.subCategory === 'Men' && p.isDress === true);
     } else if (category === "Women's Wear") {
-      filtered = filtered.filter(p => p.category === 'Fashion' && p.subCategory === 'Women');
+      filtered = filtered.filter(p => p.subCategory === 'Women' && p.isDress === true);
     } else if (category === "Kids' Wear") {
-      filtered = filtered.filter(p => p.category === 'Fashion' && p.subCategory === 'Kids');
+      filtered = filtered.filter(p => p.subCategory === 'Kids' && p.isDress === true);
     } else {
       filtered = filtered.filter(
         (p) => p.category.toLowerCase() === category.toLowerCase()
       );
     }
   }
+
   if (subCategory && subCategory !== 'All') {
     filtered = filtered.filter(
       p => p.subCategory && p.subCategory.toLowerCase() === subCategory.toLowerCase()
     );
   }
+
+  if (isDress !== undefined) {
+    const wantDress = isDress === 'true';
+    filtered = filtered.filter(p => p.isDress === wantDress);
+  }
+
   if (search) {
     const term = search.toLowerCase();
     filtered = filtered.filter(
@@ -92,7 +107,7 @@ const getProductById = async (req, res) => {
 // @desc Get product categories
 // @route GET /api/products/categories/all
 const getCategories = (req, res) => {
-  const categories = ['All', 'Electronics', 'Mobiles', 'Fashion', "Men's Wear", "Women's Wear", "Kids' Wear", 'Home', 'Books'];
+  const categories = ['All', 'Fashion', "Men's Wear", "Women's Wear", "Kids' Wear", 'Electronics', 'Mobiles', 'Home', 'Books'];
   return res.json(categories);
 };
 

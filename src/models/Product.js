@@ -31,6 +31,10 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: 'General',
     },
+    isDress: {
+      type: Boolean,
+      default: false,
+    },
     brand: {
       type: String,
       default: 'Amazon Choice',
