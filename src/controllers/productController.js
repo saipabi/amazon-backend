@@ -1,15 +1,29 @@
 const Product = require('../models/Product');
 const sampleProducts = require('../data/sampleProducts');
 
-// @desc Get all products (with optional category & search filter)
+// @desc Get all products (with optional category, subCategory & search filter)
 // @route GET /api/products
 const getProducts = async (req, res) => {
-  const { category, search } = req.query;
+  const { category, subCategory, search } = req.query;
 
   try {
     let query = {};
     if (category && category !== 'All') {
-      query.category = category;
+      if (category === "Men's Wear") {
+        query.category = 'Fashion';
+        query.subCategory = 'Men';
+      } else if (category === "Women's Wear") {
+        query.category = 'Fashion';
+        query.subCategory = 'Women';
+      } else if (category === "Kids' Wear") {
+        query.category = 'Fashion';
+        query.subCategory = 'Kids';
+      } else {
+        query.category = category;
+      }
+    }
+    if (subCategory && subCategory !== 'All') {
+      query.subCategory = subCategory;
     }
     if (search) {
       query.title = { $regex: search, $options: 'i' };
@@ -26,8 +40,21 @@ const getProducts = async (req, res) => {
   // Fallback to sample array filtering if MongoDB query fails or is empty
   let filtered = [...sampleProducts];
   if (category && category !== 'All') {
+    if (category === "Men's Wear") {
+      filtered = filtered.filter(p => p.category === 'Fashion' && p.subCategory === 'Men');
+    } else if (category === "Women's Wear") {
+      filtered = filtered.filter(p => p.category === 'Fashion' && p.subCategory === 'Women');
+    } else if (category === "Kids' Wear") {
+      filtered = filtered.filter(p => p.category === 'Fashion' && p.subCategory === 'Kids');
+    } else {
+      filtered = filtered.filter(
+        (p) => p.category.toLowerCase() === category.toLowerCase()
+      );
+    }
+  }
+  if (subCategory && subCategory !== 'All') {
     filtered = filtered.filter(
-      (p) => p.category.toLowerCase() === category.toLowerCase()
+      p => p.subCategory && p.subCategory.toLowerCase() === subCategory.toLowerCase()
     );
   }
   if (search) {
@@ -65,7 +92,7 @@ const getProductById = async (req, res) => {
 // @desc Get product categories
 // @route GET /api/products/categories/all
 const getCategories = (req, res) => {
-  const categories = ['All', 'Electronics', 'Mobiles', 'Fashion', 'Home', 'Books'];
+  const categories = ['All', 'Electronics', 'Mobiles', 'Fashion', "Men's Wear", "Women's Wear", "Kids' Wear", 'Home', 'Books'];
   return res.json(categories);
 };
 
