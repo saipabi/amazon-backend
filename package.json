@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "test": "jest --detectOpenHandles --forceExit --runInBand"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -16,5 +17,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.3.1",
     "razorpay": "^2.9.2"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2",
+    "supertest": "^7.2.2"
   }
 }

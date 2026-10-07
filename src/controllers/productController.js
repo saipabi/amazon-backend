@@ -1,47 +1,52 @@
 const Product = require('../models/Product');
 const sampleProducts = require('../data/sampleProducts');
+const mongoose = require('mongoose');
+
+const isDbConnected = () => mongoose.connection && mongoose.connection.readyState === 1;
 
 // @desc Get all products (with strict category, subCategory, isDress & search filter)
 // @route GET /api/products
 const getProducts = async (req, res) => {
   const { category, subCategory, isDress, search } = req.query;
 
-  try {
-    let query = {};
+  if (isDbConnected()) {
+    try {
+      let query = {};
 
-    if (category && category !== 'All') {
-      if (category === "Men's Wear") {
-        query.subCategory = 'Men';
-        query.isDress = true;
-      } else if (category === "Women's Wear") {
-        query.subCategory = 'Women';
-        query.isDress = true;
-      } else if (category === "Kids' Wear") {
-        query.subCategory = 'Kids';
-        query.isDress = true;
-      } else {
-        query.category = category;
+      if (category && category !== 'All') {
+        if (category === "Men's Wear") {
+          query.subCategory = 'Men';
+          query.isDress = true;
+        } else if (category === "Women's Wear") {
+          query.subCategory = 'Women';
+          query.isDress = true;
+        } else if (category === "Kids' Wear") {
+          query.subCategory = 'Kids';
+          query.isDress = true;
+        } else {
+          query.category = category;
+        }
       }
-    }
 
-    if (subCategory && subCategory !== 'All') {
-      query.subCategory = subCategory;
-    }
+      if (subCategory && subCategory !== 'All') {
+        query.subCategory = subCategory;
+      }
 
-    if (isDress !== undefined) {
-      query.isDress = isDress === 'true';
-    }
+      if (isDress !== undefined) {
+        query.isDress = isDress === 'true';
+      }
 
-    if (search) {
-      query.title = { $regex: search, $options: 'i' };
-    }
+      if (search) {
+        query.title = { $regex: search, $options: 'i' };
+      }
 
-    const products = await Product.find(query);
-    if (products && products.length > 0) {
-      return res.json(products);
+      const products = await Product.find(query);
+      if (products && products.length > 0) {
+        return res.json(products);
+      }
+    } catch (error) {
+      console.warn('Using sample product data fallback');
     }
-  } catch (error) {
-    console.warn('Using sample product data fallback');
   }
 
   // Fallback to sample array filtering
@@ -87,13 +92,15 @@ const getProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   const { id } = req.params;
 
-  try {
-    const product = await Product.findById(id);
-    if (product) {
-      return res.json(product);
+  if (isDbConnected()) {
+    try {
+      const product = await Product.findById(id);
+      if (product) {
+        return res.json(product);
+      }
+    } catch (error) {
+      // ignore
     }
-  } catch (error) {
-    // ignore
   }
 
   const sample = sampleProducts.find((p) => p._id === id || p._id === `prod_${id}`);
