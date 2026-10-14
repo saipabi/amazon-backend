@@ -1,0 +1,24 @@
+name: Backend CI Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Backend Jest Unit & Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+      - run: npm ci || npm install
+      - run: npm test
+        env:
+          NODE_ENV: test
+          JWT_SECRET: backend_test_secret_key_12345
+          PORT: 5000
